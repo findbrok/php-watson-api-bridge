@@ -1,2 +1,3 @@
-# php-watson-api-bridge
-A PHP wrapper for IBM Watson API
+# PHP IBM Watson API Bridge
+
+A simple PHP wrapper for IBM Watson API
