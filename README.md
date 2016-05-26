@@ -1,6 +1,10 @@
 # PHP IBM Watson API Bridge
 
 [![Build Status](https://travis-ci.org/findbrok/php-watson-api-bridge.svg?branch=master)](https://travis-ci.org/findbrok/php-watson-api-bridge)
+[![Latest Stable Version](https://poser.pugx.org/findbrok/php-watson-api-bridge/v/stable)](https://packagist.org/packages/findbrok/php-watson-api-bridge)
+[![Total Downloads](https://poser.pugx.org/findbrok/php-watson-api-bridge/downloads)](https://packagist.org/packages/findbrok/php-watson-api-bridge)
+[![Latest Unstable Version](https://poser.pugx.org/findbrok/php-watson-api-bridge/v/unstable)](https://packagist.org/packages/findbrok/php-watson-api-bridge)
+[![License](https://poser.pugx.org/findbrok/php-watson-api-bridge/license)](https://packagist.org/packages/findbrok/php-watson-api-bridge)
 
 A simple PHP wrapper for IBM Watson API
 
