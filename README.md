@@ -1,5 +1,9 @@
 # PHP IBM Watson API Bridge
 
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/4e21093a-cc60-4a75-b7fe-cb29053faf6c/big.png)](https://insight.sensiolabs.com/projects/4e21093a-cc60-4a75-b7fe-cb29053faf6c)
+
+<br/>
+
 [![Build Status](https://travis-ci.org/findbrok/php-watson-api-bridge.svg?branch=master)](https://travis-ci.org/findbrok/php-watson-api-bridge)
 [![Latest Stable Version](https://poser.pugx.org/findbrok/php-watson-api-bridge/v/stable)](https://packagist.org/packages/findbrok/php-watson-api-bridge)
 [![Total Downloads](https://poser.pugx.org/findbrok/php-watson-api-bridge/downloads)](https://packagist.org/packages/findbrok/php-watson-api-bridge)
