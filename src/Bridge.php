@@ -42,6 +42,28 @@ class Bridge
     protected $client;
 
     /**
+     * The WatsonToken
+     *
+     * @var \FindBrok\WatsonBridge\Token
+     */
+    protected $token;
+
+    /**
+     * Decide which method to use when sending request
+     *
+     * @var string
+     */
+    protected $authMethod = 'credentials';
+
+    /**
+     * The limit for which we can re request token,
+     * when performing request
+     *
+     * @var int
+     */
+    protected $exceptionThrottle = 0;
+
+    /**
      * Default headers
      *
      * @var array
@@ -58,14 +80,18 @@ class Bridge
      * @param string $password
      * @param string $endpoint
      */
-    public function __construct($username = null, $password = null, $endpoint = null)
+    public function __construct($username, $password, $endpoint)
     {
         //Set Username, Password and Endpoint
         $this->username = $username;
         $this->password = $password;
         $this->endpoint = $endpoint;
+
         //Set HttpClient
-        $this->setClient();
+        $this->setClient($endpoint);
+
+        //Set Token
+        $this->token = new Token($this->username);
     }
 
     /**
@@ -108,15 +134,72 @@ class Bridge
     }
 
     /**
-     * Creates the http client
+     * Fetch token from Watson and Save it locally
      *
+     * @param bool $incrementThrottle
      * @return void
      */
-    private function setClient()
+    public function fetchToken($incrementThrottle = false)
+    {
+        //Increment throttle if needed
+        if($incrementThrottle) {
+            $this->incrementThrottle();
+        }
+        //Reset Client
+        $this->setClient($this->getAuthorizationEndpoint());
+        //Get the token response
+        $response = $this->get('v1/token', [
+            'url' => $this->endpoint
+        ]);
+        //Extract
+        $token = json_decode($response->getBody()->getContents(), true);
+        //Reset client
+        $this->setClient($this->endpoint);
+        //Update token
+        $this->token->updateToken($token['token']);
+    }
+
+    /**
+     * Get a token for authorization from Watson or Storage
+     *
+     * @return string
+     */
+    public function getToken()
+    {
+        //Token is not valid
+        if (! $this->token->isValid()) {
+            //Fetch from Watson
+            $this->fetchToken();
+        }
+
+        //Return token
+        return $this->token->getToken();
+    }
+
+    /**
+     * Get the authorization endpoint for getting tokens
+     *
+     * @return string
+     */
+    public function getAuthorizationEndpoint()
+    {
+        //Parse the endpoint
+        $parsedEndpoint = collect(parse_url($this->endpoint));
+        //Return auth url
+        return $parsedEndpoint->get('scheme').'://'.$parsedEndpoint->get('host').'/authorization/api/';
+    }
+
+    /**
+     * Creates the http client
+     *
+     * @param string $endpoint
+     * @return void
+     */
+    public function setClient($endpoint = null)
     {
         //Create client using API endpoint
         $this->client = new Client([
-            'base_uri'  => $this->endpoint,
+            'base_uri'  => ! is_null($endpoint) ? $endpoint : $this->endpoint,
         ]);
     }
 
@@ -164,7 +247,7 @@ class Bridge
     }
 
     /**
-     * Make a Request to Watson
+     * Make a Request to Watson with credentials Auth
      *
      * @param string $method
      * @param string $uri
@@ -175,8 +258,17 @@ class Bridge
     {
         try {
             //Make the request
-            return $this->getClient()->request($method, $uri, $options);
+            return $this->getClient()->request($method, $uri, $this->getRequestOptions($options));
         } catch (ClientException $e) {
+            //We are using token auth and probably token expired
+            if($this->authMethod == 'token' && $e->getCode() == 401 && ! $this->isThrottledReached()) {
+                //Try refresh token
+                $this->fetchToken(true);
+                //Try requesting again
+                return $this->request($method, $uri, $options);
+            }
+            //Clear throttle for this request
+            $this->clearThrottle();
             //Call Failed Request
             $this->failedRequest($e->getResponse());
         }
@@ -193,12 +285,8 @@ class Bridge
      */
     private function send($method = 'POST', $uri, $data, $type = 'json')
     {
-        //Make a Post Request
-        $response = $this->request($method, $uri, $this->cleanOptions([
-            'headers' => $this->getHeaders(),
-            'auth' => $this->getAuth(),
-            $type => $data
-        ]));
+        //Make the Request to Watson
+        $response = $this->request($method, $uri, [$type => $data]);
         //Request Failed
         if ($response->getStatusCode() != 200) {
             //Throw Watson Bridge Exception
@@ -206,6 +294,78 @@ class Bridge
         }
         //We return response
         return $response;
+    }
+
+    /**
+     * Get Request options to pass along
+     *
+     * @param array $initial
+     * @return array
+     */
+    public function getRequestOptions($initial = [])
+    {
+        //Define options
+        $options = collect($initial);
+        //Define an auth option
+        if($this->authMethod == 'credentials') {
+            $options = $options->merge([
+                'auth' => $this->getAuth(),
+            ]);
+        } elseif ($this->authMethod == 'token') {
+            $this->appendHeaders([
+                'X-Watson-Authorization-Token' => $this->getToken()
+            ]);
+        }
+        //Put Headers in options
+        $options = $options->merge([
+            'headers' => $this->getHeaders(),
+        ]);
+        //Clean and return
+        return $this->cleanOptions($options->all());
+    }
+
+    /**
+     * Change the auth method
+     *
+     * @param string $method
+     * @return self
+     */
+    public function useAuthMethodAs($method = 'credentials')
+    {
+        //Change auth method
+        $this->authMethod = $method;
+        //Return object
+        return $this;
+    }
+
+    /**
+     * Checks if throttle is reached
+     *
+     * @return bool
+     */
+    public function isThrottledReached()
+    {
+        return $this->exceptionThrottle >= 2;
+    }
+
+    /**
+     * Increment throttle
+     *
+     * @return void
+     */
+    public function incrementThrottle()
+    {
+        $this->exceptionThrottle++;
+    }
+
+    /**
+     * Clears throttle counter
+     *
+     * @return void
+     */
+    public function clearThrottle()
+    {
+        $this->exceptionThrottle = 0;
     }
 
     /**
