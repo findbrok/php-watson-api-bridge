@@ -4,33 +4,33 @@ use Carbon\Carbon;
 use FindBrok\WatsonBridge\Token;
 
 /**
- * Class TestToken
+ * Class TestToken.
  */
 class TestToken extends PHPUnit_Framework_TestCase
 {
     /**
-     * The token object
+     * The token object.
      *
      * @var \FindBrok\WatsonBridge\Token
      */
     protected $token;
 
     /**
-     * Setup test
+     * Setup test.
      */
     public function setUp()
     {
         $this->token = new Token('username');
 
         file_put_contents($this->getTokenStoragePath('token-username.json'), collect([
-            'token' => 'sometoken',
+            'token'      => 'sometoken',
             'expires_in' => 3600,
-            'created' => Carbon::now()->format('U')
+            'created'    => Carbon::now()->format('U'),
         ])->toJson(), LOCK_EX);
     }
 
     /**
-     * Tear down test
+     * Tear down test.
      */
     public function tearDown()
     {
@@ -40,9 +40,10 @@ class TestToken extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Return Token Storage Folder
+     * Return Token Storage Folder.
      *
      * @param string $file
+     *
      * @return string
      */
     public function getTokenStoragePath($file = '')
@@ -51,7 +52,7 @@ class TestToken extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that we can create the token object
+     * Test that we can create the token object.
      *
      * @return void
      */
@@ -62,16 +63,16 @@ class TestToken extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that the method hasPayload works
+     * Test that the method hasPayload works.
      *
      * @return void
      */
     public function testHasPayLoadMethod()
     {
         $token = new Token('username', [
-            'token' => 'sometoken',
+            'token'      => 'sometoken',
             'expires_in' => 3600,
-            'created' => Carbon::now()->format('U')
+            'created'    => Carbon::now()->format('U'),
         ]);
         $this->assertTrue($token->hasPayLoad());
 
@@ -80,29 +81,29 @@ class TestToken extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that the method isExpired works
+     * Test that the method isExpired works.
      *
      * @return void
      */
     public function testIsExpiredAndIsNotExpiredMethod()
     {
         $token = new Token('username', [
-            'token' => 'sometoken',
+            'token'      => 'sometoken',
             'expires_in' => '3600',
-            'created' => Carbon::now()->format('U')
+            'created'    => Carbon::now()->format('U'),
         ]);
         $this->assertTrue($token->isNotExpired());
 
         $token2 = new Token('username2', [
-            'token' => 'sometoken',
+            'token'      => 'sometoken',
             'expires_in' => 3600,
-            'created' => Carbon::createFromFormat('Y-m-d H:i:s', '2016-06-02 00:00:00')->format('U')
+            'created'    => Carbon::createFromFormat('Y-m-d H:i:s', '2016-06-02 00:00:00')->format('U'),
         ]);
         $this->assertTrue($token2->isExpired());
     }
 
     /**
-     * Test that the getFilePath method works
+     * Test that the getFilePath method works.
      *
      * @return void
      */
@@ -115,7 +116,7 @@ class TestToken extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that the exists method works
+     * Test that the exists method works.
      *
      * @return void
      */
@@ -127,16 +128,16 @@ class TestToken extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test the save method to see if it works
+     * Test the save method to see if it works.
      *
      * @return void
      */
     public function testSaveMethod()
     {
         $payload = [
-            'token' => 'sometoken',
+            'token'      => 'sometoken',
             'expires_in' => 3600,
-            'created' => Carbon::now()->format('U')
+            'created'    => Carbon::now()->format('U'),
         ];
         $token = new Token('username2', $payload);
 
@@ -148,30 +149,30 @@ class TestToken extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that we can load a token from file and get its payload
+     * Test that we can load a token from file and get its payload.
      *
      * @return void
      */
     public function testLoadFromFileMethodAndGetPayLoadMethod()
     {
         file_put_contents($this->getTokenStoragePath('token-username3.json'), collect([
-            'token' => 'sometoken',
+            'token'      => 'sometoken',
             'expires_in' => 3600,
-            'created' => 1463977413
+            'created'    => 1463977413,
         ])->toJson(), LOCK_EX);
 
         $token = new Token('username3');
         $this->assertEquals([
-            'token' => 'sometoken',
+            'token'      => 'sometoken',
             'expires_in' => 3600,
-            'created' => 1463977413
+            'created'    => 1463977413,
         ], $token->getPayload());
 
         unlink($this->getTokenStoragePath('token-username3.json'));
     }
 
     /**
-     * Test to see if the isValid method works
+     * Test to see if the isValid method works.
      *
      * @return void
      */
@@ -182,9 +183,9 @@ class TestToken extends PHPUnit_Framework_TestCase
         $this->assertFalse($token2->isValid());
 
         file_put_contents($this->getTokenStoragePath('token-username3.json'), collect([
-            'token' => 'sometoken',
+            'token'      => 'sometoken',
             'expires_in' => 3600,
-            'created' => 1463977413
+            'created'    => 1463977413,
         ])->toJson(), LOCK_EX);
 
         $token3 = new Token('username3');
@@ -194,16 +195,16 @@ class TestToken extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test the getToken method to see if it works
+     * Test the getToken method to see if it works.
      *
      * @return void
      */
     public function testGetTokenMethod()
     {
         file_put_contents($this->getTokenStoragePath('token-username3.json'), collect([
-            'token' => 'sometoken',
+            'token'      => 'sometoken',
             'expires_in' => 3600,
-            'created' => Carbon::now()->format('U')
+            'created'    => Carbon::now()->format('U'),
         ])->toJson(), LOCK_EX);
 
         $token3 = new Token('username3');
@@ -216,16 +217,16 @@ class TestToken extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test to see if the Update token method works
+     * Test to see if the Update token method works.
      *
      * @return void
      */
     public function testUpdateTokenMethod()
     {
         $payload = [
-            'token' => 'sometoken',
+            'token'      => 'sometoken',
             'expires_in' => 3600,
-            'created' => Carbon::now()->format('U')
+            'created'    => Carbon::now()->format('U'),
         ];
         $token = new Token('username3', $payload);
         $this->assertEquals('sometoken', $token->getToken());

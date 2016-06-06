@@ -5,38 +5,36 @@ namespace FindBrok\WatsonBridge;
 use Carbon\Carbon;
 
 /**
- * Class Token
- *
- * @package FindBrok\WatsonBridge
+ * Class Token.
  */
 class Token
 {
     /**
-     * Username for which the token belongs
+     * Username for which the token belongs.
      *
      * @var string
      */
     protected $username;
 
     /**
-     * The token payload
+     * The token payload.
      *
      * @var array
      */
     protected $payLoad;
 
     /**
-     * Create a new instance of the Token class
+     * Create a new instance of the Token class.
      *
      * @param string $username
-     * @param array $payLoad
+     * @param array  $payLoad
      */
     public function __construct($username, $payLoad = [])
     {
         //Set Username for token
         $this->username = $username;
         //Have payload to set
-        if(! empty($payLoad)) {
+        if (!empty($payLoad)) {
             $this->payLoad = $payLoad;
         } else {
             //Load from file
@@ -45,17 +43,17 @@ class Token
     }
 
     /**
-     * Check if token is loaded in class
+     * Check if token is loaded in class.
      *
      * @return bool
      */
     public function hasPayLoad()
     {
-        return ! empty($this->payLoad);
+        return !empty($this->payLoad);
     }
 
     /**
-     * Check that token file exists
+     * Check that token file exists.
      *
      * @return bool
      */
@@ -65,27 +63,27 @@ class Token
     }
 
     /**
-     * Check that token is expired
+     * Check that token is expired.
      *
      * @return bool
      */
     public function isExpired()
     {
-        return ($this->hasPayLoad() && ($this->payLoad['created'] + $this->payLoad['expires_in']) < Carbon::now()->format('U'));
+        return $this->hasPayLoad() && ($this->payLoad['created'] + $this->payLoad['expires_in']) < Carbon::now()->format('U');
     }
 
     /**
-     * Check that the token is not expired
+     * Check that the token is not expired.
      *
      * @return bool
      */
     public function isNotExpired()
     {
-        return ! $this->isExpired();
+        return !$this->isExpired();
     }
 
     /**
-     * Check if token is valid
+     * Check if token is valid.
      *
      * @return bool
      */
@@ -95,14 +93,14 @@ class Token
     }
 
     /**
-     * Saves a token
+     * Saves a token.
      *
      * @return bool
      */
     public function save()
     {
         //No payload to save
-        if(! $this->hasPayLoad()) {
+        if (!$this->hasPayLoad()) {
             return false;
         }
         //Save the token
@@ -110,7 +108,7 @@ class Token
     }
 
     /**
-     * Get the token file path
+     * Get the token file path.
      *
      * @return string
      */
@@ -120,14 +118,14 @@ class Token
     }
 
     /**
-     * Load payload from file
+     * Load payload from file.
      *
      * @return array
      */
     public function loadPayLoadFromFile()
     {
         //Not found
-        if(! $this->exists()) {
+        if (!$this->exists()) {
             //We return empty array
             return [];
         }
@@ -136,7 +134,7 @@ class Token
     }
 
     /**
-     * Get the payload
+     * Get the payload.
      *
      * @return array
      */
@@ -146,7 +144,7 @@ class Token
     }
 
     /**
-     * Get the token
+     * Get the token.
      *
      * @return string|null
      */
@@ -156,18 +154,19 @@ class Token
     }
 
     /**
-     * Update the token
+     * Update the token.
      *
      * @param string $token
+     *
      * @return bool
      */
     public function updateToken($token)
     {
         //Update Payload
         $this->payLoad = [
-            'token' => $token,
+            'token'      => $token,
             'expires_in' => 3600,
-            'created' => Carbon::now()->format('U'),
+            'created'    => Carbon::now()->format('U'),
         ];
         //Save token
         return $this->save();

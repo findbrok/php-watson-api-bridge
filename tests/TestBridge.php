@@ -10,19 +10,19 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 
 /**
- * Class TestBridge
+ * Class TestBridge.
  */
 class TestBridge extends PHPUnit_Framework_TestCase
 {
     /**
-     * Watson bridge
+     * Watson bridge.
      *
      * @var
      */
     protected $bridge;
 
     /**
-     * Setup test
+     * Setup test.
      */
     public function setUp()
     {
@@ -32,9 +32,9 @@ class TestBridge extends PHPUnit_Framework_TestCase
             ->getMock();
 
         $this->createTestTokenFile('token-foo', [
-            'token' => 'someToken',
+            'token'      => 'someToken',
             'expires_in' => 3600,
-            'created' => Carbon::now()->format('U')
+            'created'    => Carbon::now()->format('U'),
         ]);
 
         $reflected = new ReflectionClass(Bridge::class);
@@ -43,7 +43,7 @@ class TestBridge extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * TearDown Test
+     * TearDown Test.
      */
     public function tearDown()
     {
@@ -52,9 +52,10 @@ class TestBridge extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Return Token Storage Folder
+     * Return Token Storage Folder.
      *
      * @param string $file
+     *
      * @return string
      */
     public function getTokenStoragePath($file = '')
@@ -63,7 +64,7 @@ class TestBridge extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Get response body for a token
+     * Get response body for a token.
      *
      * @return string
      */
@@ -73,10 +74,11 @@ class TestBridge extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Creates a test token file
+     * Creates a test token file.
      *
      * @param string $name
-     * @param array $data
+     * @param array  $data
+     *
      * @return void
      */
     public function createTestTokenFile($name = '', $data = [])
@@ -89,9 +91,10 @@ class TestBridge extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Delete a test token file
+     * Delete a test token file.
      *
      * @param string $name
+     *
      * @return void
      */
     public function deleteTestTokenFile($name = '')
@@ -100,7 +103,7 @@ class TestBridge extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that we are able to create bridge object
+     * Test that we are able to create bridge object.
      *
      * @return voids
      */
@@ -111,7 +114,7 @@ class TestBridge extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that we get the correct Auth endpoint for getting token
+     * Test that we get the correct Auth endpoint for getting token.
      *
      * @return void
      */
@@ -125,7 +128,7 @@ class TestBridge extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that we can set and reset the client correctly
+     * Test that we can set and reset the client correctly.
      *
      * @return void
      */
@@ -135,7 +138,7 @@ class TestBridge extends PHPUnit_Framework_TestCase
         $this->assertInstanceOf(Client::class, $bridge->getClient());
 
         $client = new Client([
-            'base_uri'  => 'https://gateway.watsonplatform.net/service/api/'
+            'base_uri'  => 'https://gateway.watsonplatform.net/service/api/',
         ]);
         $this->assertEquals($client->getConfig('base_uri'), $bridge->getClient()->getConfig('base_uri'));
 
@@ -144,7 +147,7 @@ class TestBridge extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that the getRequestOptions method works correctly
+     * Test that the getRequestOptions method works correctly.
      *
      * @return void
      */
@@ -163,26 +166,26 @@ class TestBridge extends PHPUnit_Framework_TestCase
         ];
 
         $this->assertEquals([
-            'json' => ['foo' => 'bar'],
-            'auth' => ['foo', 'password'],
+            'json'    => ['foo' => 'bar'],
+            'auth'    => ['foo', 'password'],
             'headers' => [
-                'Accept' => 'application/json',
-                'X-Watson-Learning-Opt-Out' => false
-            ]
+                'Accept'                    => 'application/json',
+                'X-Watson-Learning-Opt-Out' => false,
+            ],
         ], $this->bridge->useAuthMethodAs('credentials')->getRequestOptions(['json' => $data]));
 
         $this->assertEquals([
-            'json' => ['foo' => 'bar'],
+            'json'    => ['foo' => 'bar'],
             'headers' => [
-                'Accept' => 'application/json',
-                'X-Watson-Learning-Opt-Out' => false,
-                'X-Watson-Authorization-Token' => 'someToken'
-            ]
+                'Accept'                       => 'application/json',
+                'X-Watson-Learning-Opt-Out'    => false,
+                'X-Watson-Authorization-Token' => 'someToken',
+            ],
         ], $this->bridge->useAuthMethodAs('token')->getRequestOptions(['json' => $data]));
     }
 
     /**
-     * Test a Successful Get request
+     * Test a Successful Get request.
      *
      * @return void
      */
@@ -201,7 +204,7 @@ class TestBridge extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that the getToken method works
+     * Test that the getToken method works.
      *
      * @return void
      */
@@ -223,7 +226,7 @@ class TestBridge extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that the getToken method works when token is saved
+     * Test that the getToken method works when token is saved.
      *
      * @return void
      */
@@ -234,16 +237,16 @@ class TestBridge extends PHPUnit_Framework_TestCase
 
     /**
      * Test the getToken method with an expired token, we fetch the token from
-     * Watson again
+     * Watson again.
      *
      * @return void
      */
     public function testGetTokenMethodWhenTokenExpiredAndFetchTokenAgain()
     {
         $this->createTestTokenFile('token-foofoo', [
-            'token' => 'oldToken',
+            'token'      => 'oldToken',
             'expires_in' => 3600,
-            'created' => 1463977413
+            'created'    => 1463977413,
         ]);
 
         // Create a mock and queue one response
@@ -264,38 +267,22 @@ class TestBridge extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test a Get request which fails
+     * Test a Get request which fails.
      *
      * @expectedException \FindBrok\WatsonBridge\Exceptions\WatsonBridgeException
-     *
-    public function testGetRequestWithException()
-    {
-        // Create a mock and queue one response
-        $mock = new MockHandler([
-            new ClientException(
-                'Watson Error',
-                new Request('GET', 'version/watson-api-method'),
-                new Response(400, ['X-Foo' => 'Bar'], collect(['error_code' => 400, 'error_message' => 'Watson Error'])->toJson())
-            )
-        ]);
-        $handler = HandlerStack::create($mock);
-        $client = new Client(['handler' => $handler]);
-        $this->bridge->method('getClient')->willReturn($client);
-
-        $this->bridge->get('version/watson-api-method', ['foo' => 'bar']);
-    }*/
+     }*/
 
     /**
-     * Test that when the token is expired we refresh the token and try again
+     * Test that when the token is expired we refresh the token and try again.
      *
      * @return void
      */
     public function testTokenExpiredWhenMakingRequestWeRefreshTokenAndTryAgain()
     {
         $this->createTestTokenFile('token-foobar', [
-            'token' => 'oldToken',
+            'token'      => 'oldToken',
             'expires_in' => 3600,
-            'created' => Carbon::now()->format('U')
+            'created'    => Carbon::now()->format('U'),
         ]);
 
         $expectedResponseBody = collect(['someData' => 'data'])->toJson();
