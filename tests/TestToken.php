@@ -40,6 +40,35 @@ class TestToken extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * Creates a test token file.
+     *
+     * @param string $name
+     * @param array  $data
+     *
+     * @return void
+     */
+    public function createTestTokenFile($name = '', $data = [])
+    {
+        file_put_contents(
+            $this->getTokenStoragePath($name.'.json'),
+            collect($data)->toJson(),
+            LOCK_EX
+        );
+    }
+
+    /**
+     * Delete a test token file.
+     *
+     * @param string $name
+     *
+     * @return void
+     */
+    public function deleteTestTokenFile($name = '')
+    {
+        unlink($this->getTokenStoragePath($name.'.json'));
+    }
+
+    /**
      * Return Token Storage Folder.
      *
      * @param string $file
@@ -145,7 +174,7 @@ class TestToken extends PHPUnit_Framework_TestCase
         $this->assertFileExists($this->getTokenStoragePath('token-username2.json'));
         $this->assertJsonStringEqualsJsonFile($this->getTokenStoragePath('token-username2.json'), collect($payload)->toJson());
 
-        unlink($this->getTokenStoragePath('token-username2.json'));
+        $this->deleteTestTokenFile('token-username2');
     }
 
     /**
@@ -155,11 +184,11 @@ class TestToken extends PHPUnit_Framework_TestCase
      */
     public function testLoadFromFileMethodAndGetPayLoadMethod()
     {
-        file_put_contents($this->getTokenStoragePath('token-username3.json'), collect([
+        $this->createTestTokenFile('token-username3', [
             'token'      => 'sometoken',
             'expires_in' => 3600,
             'created'    => 1463977413,
-        ])->toJson(), LOCK_EX);
+        ]);
 
         $token = new Token('username3');
         $this->assertEquals([
@@ -168,7 +197,7 @@ class TestToken extends PHPUnit_Framework_TestCase
             'created'    => 1463977413,
         ], $token->getPayload());
 
-        unlink($this->getTokenStoragePath('token-username3.json'));
+        $this->deleteTestTokenFile('token-username3');
     }
 
     /**
@@ -182,16 +211,16 @@ class TestToken extends PHPUnit_Framework_TestCase
         $token2 = new Token('username2');
         $this->assertFalse($token2->isValid());
 
-        file_put_contents($this->getTokenStoragePath('token-username3.json'), collect([
+        $this->createTestTokenFile('token-username3', [
             'token'      => 'sometoken',
             'expires_in' => 3600,
             'created'    => 1463977413,
-        ])->toJson(), LOCK_EX);
+        ]);
 
         $token3 = new Token('username3');
         $this->assertFalse($token3->isValid());
 
-        unlink($this->getTokenStoragePath('token-username3.json'));
+        $this->deleteTestTokenFile('token-username3');
     }
 
     /**
@@ -201,11 +230,11 @@ class TestToken extends PHPUnit_Framework_TestCase
      */
     public function testGetTokenMethod()
     {
-        file_put_contents($this->getTokenStoragePath('token-username3.json'), collect([
+        $this->createTestTokenFile('token-username3', [
             'token'      => 'sometoken',
             'expires_in' => 3600,
             'created'    => Carbon::now()->format('U'),
-        ])->toJson(), LOCK_EX);
+        ]);
 
         $token3 = new Token('username3');
         $this->assertEquals('sometoken', $token3->getToken());
@@ -213,7 +242,7 @@ class TestToken extends PHPUnit_Framework_TestCase
         $token2 = new Token('username2');
         $this->assertNull($token2->getToken());
 
-        unlink($this->getTokenStoragePath('token-username3.json'));
+        $this->deleteTestTokenFile('token-username3');
     }
 
     /**
@@ -235,6 +264,6 @@ class TestToken extends PHPUnit_Framework_TestCase
         $this->assertEquals('newToken', $token->getToken());
         $this->assertFileExists($this->getTokenStoragePath('token-username3.json'));
 
-        unlink($this->getTokenStoragePath('token-username3.json'));
+        $this->deleteTestTokenFile('token-username3');
     }
 }

@@ -5,6 +5,7 @@ namespace FindBrok\WatsonBridge;
 use FindBrok\WatsonBridge\Exceptions\WatsonBridgeException;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Psr7\Response;
 
 /**
  * Class Bridge.
@@ -233,11 +234,11 @@ class Bridge
     /**
      * Failed Request to Watson.
      *
-     * @param \GuzzleHttp\Psr7\Response $response
+     * @param Response $response
      *
      * @throws WatsonBridgeException
      */
-    public function failedRequest($response)
+    public function failedRequest(Response $response)
     {
         //Decode Response
         $decodedResponse = json_decode($response->getBody()->getContents(), true);

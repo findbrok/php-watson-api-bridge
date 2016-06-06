@@ -267,12 +267,6 @@ class TestBridge extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test a Get request which fails.
-     *
-     * @expectedException \FindBrok\WatsonBridge\Exceptions\WatsonBridgeException
-     }*/
-
-    /**
      * Test that when the token is expired we refresh the token and try again.
      *
      * @return void
