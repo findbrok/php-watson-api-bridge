@@ -59,7 +59,7 @@ class Token
      */
     public function exists()
     {
-        return file_exists(__DIR__.'/Storage/'.'token-'.$this->username.'.json');
+        return file_exists(__DIR__ . '/Storage/' . 'token-' . $this->username . '.json');
     }
 
     /**
@@ -114,7 +114,7 @@ class Token
      */
     public function getFilePath()
     {
-        return __DIR__.'/Storage/token-'.$this->username.'.json';
+        return __DIR__ . '/Storage/token-' . $this->username . '.json';
     }
 
     /**

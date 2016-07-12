@@ -100,7 +100,7 @@ class Bridge
     public function appendHeaders($headers = [])
     {
         //We have some headers to append
-        if (! empty($headers)) {
+        if (!empty($headers)) {
             //Append headers
             $this->headers = collect($this->headers)->merge($headers)->all();
         }
@@ -160,7 +160,7 @@ class Bridge
         //Decode Response
         $decodedResponse = json_decode($response->getBody()->getContents(), true);
         //Get error message
-        $errorMessage = (isset($decodedResponse['error_message']) && ! is_null($decodedResponse['error_message'])) ?
+        $errorMessage = (isset($decodedResponse['error_message']) && !is_null($decodedResponse['error_message'])) ?
             $decodedResponse['error_message'] :
             $response->getReasonPhrase();
         //ClientException
@@ -291,7 +291,7 @@ class Bridge
     public function getToken()
     {
         //Token is not valid
-        if (! $this->token->isValid()) {
+        if (!$this->token->isValid()) {
             //Fetch from Watson
             $this->fetchToken();
         }
@@ -381,7 +381,7 @@ class Bridge
             return $this->getClient()->request($method, $uri, $this->getRequestOptions($options));
         } catch (ClientException $e) {
             //We are using token auth and probably token expired
-            if ($this->authMethod == 'token' && $e->getCode() == 401 && ! $this->isThrottledReached()) {
+            if ($this->authMethod == 'token' && $e->getCode() == 401 && !$this->isThrottledReached()) {
                 //Try refresh token
                 $this->fetchToken(true);
                 //Try requesting again
@@ -428,7 +428,7 @@ class Bridge
     {
         //Create client using API endpoint
         $this->client = new Client([
-            'base_uri' => ! is_null($endpoint) ? $endpoint : $this->endpoint,
+            'base_uri' => !is_null($endpoint) ? $endpoint : $this->endpoint,
         ]);
     }
 

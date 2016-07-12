@@ -24,7 +24,7 @@ class WatsonBridgeException extends RuntimeException
     public function __construct($message = '', $code = 400, Exception $previous = null)
     {
         //Format message
-        $message = 'Watson Bridge: '.(($message != '') ? $message : $this->message);
+        $message = 'Watson Bridge: ' . (($message != '') ? $message : $this->message);
         //Call parent exception
         parent::__construct($message, $code, $previous);
     }
