@@ -9,9 +9,6 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 
-/**
- * Class TestBridge.
- */
 class TestBridge extends PHPUnit_Framework_TestCase
 {
     /**
@@ -22,14 +19,65 @@ class TestBridge extends PHPUnit_Framework_TestCase
     protected $bridge;
 
     /**
+     * Creates a test token file.
+     *
+     * @param string $name
+     * @param array  $data
+     *
+     * @return void
+     */
+    public function createTestTokenFile($name = '', $data = [])
+    {
+        file_put_contents(
+            $this->getTokenStoragePath($name . '.json'),
+            collect($data)->toJson(),
+            LOCK_EX
+        );
+    }
+
+    /**
+     * Delete a test token file.
+     *
+     * @param string $name
+     *
+     * @return void
+     */
+    public function deleteTestTokenFile($name = '')
+    {
+        unlink($this->getTokenStoragePath($name . '.json'));
+    }
+
+    /**
+     * Get response body for a token.
+     *
+     * @return string
+     */
+    public function getTokenResponseBody()
+    {
+        return file_get_contents(__DIR__ . '/fixtures/raw-token.json');
+    }
+
+    /**
+     * Return Token Storage Folder.
+     *
+     * @param string $file
+     *
+     * @return string
+     */
+    public function getTokenStoragePath($file = '')
+    {
+        return __DIR__ . '/../src/Storage/' . $file;
+    }
+
+    /**
      * Setup test.
      */
     public function setUp()
     {
         $this->bridge = $this->getMockBuilder('FindBrok\WatsonBridge\Bridge')
-            ->disableOriginalConstructor()
-            ->setMethods(['getClient'])
-            ->getMock();
+                             ->disableOriginalConstructor()
+                             ->setMethods(['getClient'])
+                             ->getMock();
 
         $this->createTestTokenFile('token-foo', [
             'token'      => 'someToken',
@@ -49,57 +97,6 @@ class TestBridge extends PHPUnit_Framework_TestCase
     {
         unset($this->bridge);
         $this->deleteTestTokenFile('token-foo');
-    }
-
-    /**
-     * Return Token Storage Folder.
-     *
-     * @param string $file
-     *
-     * @return string
-     */
-    public function getTokenStoragePath($file = '')
-    {
-        return __DIR__.'/../src/Storage/'.$file;
-    }
-
-    /**
-     * Get response body for a token.
-     *
-     * @return string
-     */
-    public function getTokenResponseBody()
-    {
-        return file_get_contents(__DIR__.'/fixtures/raw-token.json');
-    }
-
-    /**
-     * Creates a test token file.
-     *
-     * @param string $name
-     * @param array  $data
-     *
-     * @return void
-     */
-    public function createTestTokenFile($name = '', $data = [])
-    {
-        file_put_contents(
-            $this->getTokenStoragePath($name.'.json'),
-            collect($data)->toJson(),
-            LOCK_EX
-        );
-    }
-
-    /**
-     * Delete a test token file.
-     *
-     * @param string $name
-     *
-     * @return void
-     */
-    public function deleteTestTokenFile($name = '')
-    {
-        unlink($this->getTokenStoragePath($name.'.json'));
     }
 
     /**
@@ -125,25 +122,6 @@ class TestBridge extends PHPUnit_Framework_TestCase
 
         $bridge2 = new Bridge('username', 'password', 'https://stream.watsonplatform.net/service/api/');
         $this->assertEquals('https://stream.watsonplatform.net/authorization/api/', $bridge2->getAuthorizationEndpoint());
-    }
-
-    /**
-     * Test that we can set and reset the client correctly.
-     *
-     * @return void
-     */
-    public function testSetClientMethodClientCorrectlySet()
-    {
-        $bridge = new Bridge('username', 'password', 'https://gateway.watsonplatform.net/service/api/');
-        $this->assertInstanceOf(Client::class, $bridge->getClient());
-
-        $client = new Client([
-            'base_uri'  => 'https://gateway.watsonplatform.net/service/api/',
-        ]);
-        $this->assertEquals($client->getConfig('base_uri'), $bridge->getClient()->getConfig('base_uri'));
-
-        $bridge->setClient($bridge->getAuthorizationEndpoint());
-        $this->assertNotEquals($client->getConfig('base_uri'), $bridge->getClient()->getConfig('base_uri'));
     }
 
     /**
@@ -204,38 +182,6 @@ class TestBridge extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test that the getToken method works.
-     *
-     * @return void
-     */
-    public function testGetTokenMethodWhenTokenNotValidAndFetchedFromWatsonWithOkToken()
-    {
-        // Create a mock and queue one response
-        $mock = new MockHandler([
-            new Response(200, ['X-Foo' => 'Bar'], $this->getTokenResponseBody()),
-        ]);
-        $handler = HandlerStack::create($mock);
-        $client = new Client(['handler' => $handler]);
-        $this->bridge->method('getClient')->willReturn($client);
-
-        $reflected = new ReflectionClass(Bridge::class);
-        $constructor = $reflected->getConstructor();
-        $constructor->invoke($this->bridge, 'username', 'password', 'url');
-
-        $this->assertEquals('someToken', $this->bridge->getToken());
-    }
-
-    /**
-     * Test that the getToken method works when token is saved.
-     *
-     * @return void
-     */
-    public function testGetTokenMethodWhenTokenIsAlreadyInCache()
-    {
-        $this->assertEquals('someToken', $this->bridge->getToken());
-    }
-
-    /**
      * Test the getToken method with an expired token, we fetch the token from
      * Watson again.
      *
@@ -264,6 +210,57 @@ class TestBridge extends PHPUnit_Framework_TestCase
         $this->assertEquals('someToken', $this->bridge->getToken());
 
         $this->deleteTestTokenFile('token-foofoo');
+    }
+
+    /**
+     * Test that the getToken method works when token is saved.
+     *
+     * @return void
+     */
+    public function testGetTokenMethodWhenTokenIsAlreadyInCache()
+    {
+        $this->assertEquals('someToken', $this->bridge->getToken());
+    }
+
+    /**
+     * Test that the getToken method works.
+     *
+     * @return void
+     */
+    public function testGetTokenMethodWhenTokenNotValidAndFetchedFromWatsonWithOkToken()
+    {
+        // Create a mock and queue one response
+        $mock = new MockHandler([
+            new Response(200, ['X-Foo' => 'Bar'], $this->getTokenResponseBody()),
+        ]);
+        $handler = HandlerStack::create($mock);
+        $client = new Client(['handler' => $handler]);
+        $this->bridge->method('getClient')->willReturn($client);
+
+        $reflected = new ReflectionClass(Bridge::class);
+        $constructor = $reflected->getConstructor();
+        $constructor->invoke($this->bridge, 'username', 'password', 'url');
+
+        $this->assertEquals('someToken', $this->bridge->getToken());
+    }
+
+    /**
+     * Test that we can set and reset the client correctly.
+     *
+     * @return void
+     */
+    public function testSetClientMethodClientCorrectlySet()
+    {
+        $bridge = new Bridge('username', 'password', 'https://gateway.watsonplatform.net/service/api/');
+        $this->assertInstanceOf(Client::class, $bridge->getClient());
+
+        $client = new Client([
+            'base_uri' => 'https://gateway.watsonplatform.net/service/api/',
+        ]);
+        $this->assertEquals($client->getConfig('base_uri'), $bridge->getClient()->getConfig('base_uri'));
+
+        $bridge->setClient($bridge->getAuthorizationEndpoint());
+        $this->assertNotEquals($client->getConfig('base_uri'), $bridge->getClient()->getConfig('base_uri'));
     }
 
     /**

@@ -7,31 +7,14 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Response;
 
-/**
- * Class Bridge.
- */
 class Bridge
 {
     /**
-     * API Username.
+     * Decide which method to use when sending request.
      *
      * @var string
      */
-    protected $username;
-
-    /**
-     * API password.
-     *
-     * @var string
-     */
-    protected $password;
-
-    /**
-     * API Endpoint for making request.
-     *
-     * @var string
-     */
-    protected $endpoint;
+    protected $authMethod = 'credentials';
 
     /**
      * Guzzle http client for performing API request.
@@ -41,18 +24,11 @@ class Bridge
     protected $client;
 
     /**
-     * The WatsonToken.
-     *
-     * @var \FindBrok\WatsonBridge\Token
-     */
-    protected $token;
-
-    /**
-     * Decide which method to use when sending request.
+     * API Endpoint for making request.
      *
      * @var string
      */
-    protected $authMethod = 'credentials';
+    protected $endpoint;
 
     /**
      * The limit for which we can re request token,
@@ -71,6 +47,27 @@ class Bridge
         'Accept'                    => 'application/json',
         'X-Watson-Learning-Opt-Out' => false,
     ];
+
+    /**
+     * API password.
+     *
+     * @var string
+     */
+    protected $password;
+
+    /**
+     * The WatsonToken.
+     *
+     * @var \FindBrok\WatsonBridge\Token
+     */
+    protected $token;
+
+    /**
+     * API Username.
+     *
+     * @var string
+     */
+    protected $username;
 
     /**
      * Create a new instance of bridge.
@@ -94,17 +91,6 @@ class Bridge
     }
 
     /**
-     * Return the authorization for making request.
-     *
-     * @return array
-     */
-    public function getAuth()
-    {
-        //Return access authorization
-        return [$this->username, $this->password];
-    }
-
-    /**
      * Appends headers to the request.
      *
      * @param array $headers
@@ -114,7 +100,7 @@ class Bridge
     public function appendHeaders($headers = [])
     {
         //We have some headers to append
-        if (!empty($headers)) {
+        if (! empty($headers)) {
             //Append headers
             $this->headers = collect($this->headers)->merge($headers)->all();
         }
@@ -123,14 +109,62 @@ class Bridge
     }
 
     /**
-     * Return the headers used for making request.
+     * Clean options by removing empty items.
+     *
+     * @param array $options
      *
      * @return array
      */
-    public function getHeaders()
+    public function cleanOptions($options = [])
     {
-        //Return headers
-        return  $this->headers;
+        //If item is null or empty we will remove them
+        return collect($options)->reject(function ($item) {
+            return empty($item) || is_null($item);
+        })->all();
+    }
+
+    /**
+     * Clears throttle counter.
+     *
+     * @return void
+     */
+    public function clearThrottle()
+    {
+        $this->exceptionThrottle = 0;
+    }
+
+    /**
+     * Make a DELETE Request to Watson.
+     *
+     * @param string $uri
+     * @param        $data
+     * @param string $type
+     *
+     * @return \GuzzleHttp\Psr7\Response
+     */
+    public function delete($uri, $data, $type = 'json')
+    {
+        //Make a Delete and return response
+        return $this->send('DELETE', $uri, $data, $type);
+    }
+
+    /**
+     * Failed Request to Watson.
+     *
+     * @param Response $response
+     *
+     * @throws WatsonBridgeException
+     */
+    public function failedRequest(Response $response)
+    {
+        //Decode Response
+        $decodedResponse = json_decode($response->getBody()->getContents(), true);
+        //Get error message
+        $errorMessage = (isset($decodedResponse['error_message']) && ! is_null($decodedResponse['error_message'])) ?
+            $decodedResponse['error_message'] :
+            $response->getReasonPhrase();
+        //ClientException
+        throw new WatsonBridgeException($errorMessage, $response->getStatusCode());
     }
 
     /**
@@ -161,20 +195,28 @@ class Bridge
     }
 
     /**
-     * Get a token for authorization from Watson or Storage.
+     * Make a GET Request to Watson.
      *
-     * @return string
+     * @param string $uri
+     * @param array  $query
+     *
+     * @return \GuzzleHttp\Psr7\Response
      */
-    public function getToken()
+    public function get($uri = '', $query = [])
     {
-        //Token is not valid
-        if (!$this->token->isValid()) {
-            //Fetch from Watson
-            $this->fetchToken();
-        }
+        //Make a Post and return response
+        return $this->send('GET', $uri, $query, 'query');
+    }
 
-        //Return token
-        return $this->token->getToken();
+    /**
+     * Return the authorization for making request.
+     *
+     * @return array
+     */
+    public function getAuth()
+    {
+        //Return access authorization
+        return [$this->username, $this->password];
     }
 
     /**
@@ -187,22 +229,7 @@ class Bridge
         //Parse the endpoint
         $parsedEndpoint = collect(parse_url($this->endpoint));
         //Return auth url
-        return $parsedEndpoint->get('scheme').'://'.$parsedEndpoint->get('host').'/authorization/api/';
-    }
-
-    /**
-     * Creates the http client.
-     *
-     * @param string $endpoint
-     *
-     * @return void
-     */
-    public function setClient($endpoint = null)
-    {
-        //Create client using API endpoint
-        $this->client = new Client([
-            'base_uri'  => !is_null($endpoint) ? $endpoint : $this->endpoint,
-        ]);
+        return $parsedEndpoint->get('scheme') . '://' . $parsedEndpoint->get('host') . '/authorization/api/';
     }
 
     /**
@@ -217,37 +244,125 @@ class Bridge
     }
 
     /**
-     * Clean options by removing empty items.
-     *
-     * @param array $options
+     * Return the headers used for making request.
      *
      * @return array
      */
-    public function cleanOptions($options = [])
+    public function getHeaders()
     {
-        //If item is null or empty we will remove them
-        return collect($options)->reject(function ($item) {
-            return empty($item) || is_null($item);
-        })->all();
+        //Return headers
+        return $this->headers;
     }
 
     /**
-     * Failed Request to Watson.
+     * Get Request options to pass along.
      *
-     * @param Response $response
+     * @param array $initial
      *
-     * @throws WatsonBridgeException
+     * @return array
      */
-    public function failedRequest(Response $response)
+    public function getRequestOptions($initial = [])
     {
-        //Decode Response
-        $decodedResponse = json_decode($response->getBody()->getContents(), true);
-        //Get error message
-        $errorMessage = (isset($decodedResponse['error_message']) && !is_null($decodedResponse['error_message'])) ?
-            $decodedResponse['error_message'] :
-            $response->getReasonPhrase();
-        //ClientException
-        throw new WatsonBridgeException($errorMessage, $response->getStatusCode());
+        //Define options
+        $options = collect($initial);
+        //Define an auth option
+        if ($this->authMethod == 'credentials') {
+            $options = $options->merge([
+                'auth' => $this->getAuth(),
+            ]);
+        } elseif ($this->authMethod == 'token') {
+            $this->appendHeaders([
+                'X-Watson-Authorization-Token' => $this->getToken(),
+            ]);
+        }
+        //Put Headers in options
+        $options = $options->merge([
+            'headers' => $this->getHeaders(),
+        ]);
+        //Clean and return
+        return $this->cleanOptions($options->all());
+    }
+
+    /**
+     * Get a token for authorization from Watson or Storage.
+     *
+     * @return string
+     */
+    public function getToken()
+    {
+        //Token is not valid
+        if (! $this->token->isValid()) {
+            //Fetch from Watson
+            $this->fetchToken();
+        }
+
+        //Return token
+        return $this->token->getToken();
+    }
+
+    /**
+     * Increment throttle.
+     *
+     * @return void
+     */
+    public function incrementThrottle()
+    {
+        $this->exceptionThrottle++;
+    }
+
+    /**
+     * Checks if throttle is reached.
+     *
+     * @return bool
+     */
+    public function isThrottledReached()
+    {
+        return $this->exceptionThrottle >= 2;
+    }
+
+    /**
+     * Make a PATCH Request to Watson.
+     *
+     * @param string $uri
+     * @param        $data
+     * @param string $type
+     *
+     * @return \GuzzleHttp\Psr7\Response
+     */
+    public function patch($uri, $data, $type = 'json')
+    {
+        //Make a Patch and return response
+        return $this->send('PATCH', $uri, $data, $type);
+    }
+
+    /**
+     * Make a POST Request to Watson.
+     *
+     * @param string $uri
+     * @param mixed  $data
+     * @param string $type
+     *
+     * @return \GuzzleHttp\Psr7\Response
+     */
+    public function post($uri, $data, $type = 'json')
+    {
+        //Make a Post and return response
+        return $this->send('POST', $uri, $data, $type);
+    }
+
+    /**
+     * Make a PUT Request to Watson.
+     *
+     * @param string $uri
+     * @param        $data
+     * @param string $type
+     *
+     * @return \GuzzleHttp\Psr7\Response
+     */
+    public function put($uri, $data, $type = 'json')
+    {
+        //Make a Put and return response
+        return $this->send('PUT', $uri, $data, $type);
     }
 
     /**
@@ -266,7 +381,7 @@ class Bridge
             return $this->getClient()->request($method, $uri, $this->getRequestOptions($options));
         } catch (ClientException $e) {
             //We are using token auth and probably token expired
-            if ($this->authMethod == 'token' && $e->getCode() == 401 && !$this->isThrottledReached()) {
+            if ($this->authMethod == 'token' && $e->getCode() == 401 && ! $this->isThrottledReached()) {
                 //Try refresh token
                 $this->fetchToken(true);
                 //Try requesting again
@@ -303,32 +418,18 @@ class Bridge
     }
 
     /**
-     * Get Request options to pass along.
+     * Creates the http client.
      *
-     * @param array $initial
+     * @param string $endpoint
      *
-     * @return array
+     * @return void
      */
-    public function getRequestOptions($initial = [])
+    public function setClient($endpoint = null)
     {
-        //Define options
-        $options = collect($initial);
-        //Define an auth option
-        if ($this->authMethod == 'credentials') {
-            $options = $options->merge([
-                'auth' => $this->getAuth(),
-            ]);
-        } elseif ($this->authMethod == 'token') {
-            $this->appendHeaders([
-                'X-Watson-Authorization-Token' => $this->getToken(),
-            ]);
-        }
-        //Put Headers in options
-        $options = $options->merge([
-            'headers' => $this->getHeaders(),
+        //Create client using API endpoint
+        $this->client = new Client([
+            'base_uri' => ! is_null($endpoint) ? $endpoint : $this->endpoint,
         ]);
-        //Clean and return
-        return $this->cleanOptions($options->all());
     }
 
     /**
@@ -344,109 +445,5 @@ class Bridge
         $this->authMethod = $method;
         //Return object
         return $this;
-    }
-
-    /**
-     * Checks if throttle is reached.
-     *
-     * @return bool
-     */
-    public function isThrottledReached()
-    {
-        return $this->exceptionThrottle >= 2;
-    }
-
-    /**
-     * Increment throttle.
-     *
-     * @return void
-     */
-    public function incrementThrottle()
-    {
-        $this->exceptionThrottle++;
-    }
-
-    /**
-     * Clears throttle counter.
-     *
-     * @return void
-     */
-    public function clearThrottle()
-    {
-        $this->exceptionThrottle = 0;
-    }
-
-    /**
-     * Make a GET Request to Watson.
-     *
-     * @param string $uri
-     * @param array  $query
-     *
-     * @return \GuzzleHttp\Psr7\Response
-     */
-    public function get($uri = '', $query = [])
-    {
-        //Make a Post and return response
-        return $this->send('GET', $uri, $query, 'query');
-    }
-
-    /**
-     * Make a POST Request to Watson.
-     *
-     * @param string $uri
-     * @param mixed  $data
-     * @param string $type
-     *
-     * @return \GuzzleHttp\Psr7\Response
-     */
-    public function post($uri, $data, $type = 'json')
-    {
-        //Make a Post and return response
-        return $this->send('POST', $uri, $data, $type);
-    }
-
-    /**
-     * Make a PUT Request to Watson.
-     *
-     * @param string $uri
-     * @param $data
-     * @param string $type
-     *
-     * @return \GuzzleHttp\Psr7\Response
-     */
-    public function put($uri, $data, $type = 'json')
-    {
-        //Make a Put and return response
-        return $this->send('PUT', $uri, $data, $type);
-    }
-
-    /**
-     * Make a PATCH Request to Watson.
-     *
-     * @param string $uri
-     * @param $data
-     * @param string $type
-     *
-     * @return \GuzzleHttp\Psr7\Response
-     */
-    public function patch($uri, $data, $type = 'json')
-    {
-        //Make a Patch and return response
-        return $this->send('PATCH', $uri, $data, $type);
-    }
-
-    /**
-     * Make a DELETE Request to Watson.
-     *
-     * @param string $uri
-     * @param $data
-     * @param string $type
-     *
-     * @return \GuzzleHttp\Psr7\Response
-     */
-    public function delete($uri, $data, $type = 'json')
-    {
-        //Make a Delete and return response
-        return $this->send('DELETE', $uri, $data, $type);
     }
 }

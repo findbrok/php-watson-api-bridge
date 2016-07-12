@@ -3,9 +3,6 @@
 use Carbon\Carbon;
 use FindBrok\WatsonBridge\Token;
 
-/**
- * Class TestToken.
- */
 class TestToken extends PHPUnit_Framework_TestCase
 {
     /**

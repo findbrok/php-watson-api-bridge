@@ -5,9 +5,6 @@ namespace FindBrok\WatsonBridge\Exceptions;
 use Exception;
 use RuntimeException;
 
-/**
- * Class WatsonBridgeException.
- */
 class WatsonBridgeException extends RuntimeException
 {
     /**
