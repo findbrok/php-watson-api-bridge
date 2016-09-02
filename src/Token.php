@@ -34,7 +34,7 @@ class Token
         //Set Username for token
         $this->username = $username;
         //Have payload to set
-        if (!empty($payLoad)) {
+        if (! empty($payLoad)) {
             $this->payLoad = $payLoad;
         } else {
             //Load from file
@@ -49,7 +49,7 @@ class Token
      */
     public function hasPayLoad()
     {
-        return !empty($this->payLoad);
+        return ! empty($this->payLoad);
     }
 
     /**
@@ -59,7 +59,7 @@ class Token
      */
     public function exists()
     {
-        return file_exists(__DIR__.'/Storage/'.'token-'.$this->username.'.json');
+        return file_exists(__DIR__ . '/Storage/' . 'token-' . $this->username . '.json');
     }
 
     /**
@@ -79,7 +79,7 @@ class Token
      */
     public function isNotExpired()
     {
-        return !$this->isExpired();
+        return ! $this->isExpired();
     }
 
     /**
@@ -100,7 +100,7 @@ class Token
     public function save()
     {
         //No payload to save
-        if (!$this->hasPayLoad()) {
+        if (! $this->hasPayLoad()) {
             return false;
         }
         //Save the token
@@ -114,7 +114,7 @@ class Token
      */
     public function getFilePath()
     {
-        return __DIR__.'/Storage/token-'.$this->username.'.json';
+        return __DIR__ . '/Storage/token-' . $this->username . '.json';
     }
 
     /**
@@ -125,7 +125,7 @@ class Token
     public function loadPayLoadFromFile()
     {
         //Not found
-        if (!$this->exists()) {
+        if (! $this->exists()) {
             //We return empty array
             return [];
         }
