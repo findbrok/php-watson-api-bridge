@@ -2,10 +2,10 @@
 
 namespace FindBrok\WatsonBridge;
 
-use FindBrok\WatsonBridge\Exceptions\WatsonBridgeException;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Exception\ClientException;
+use FindBrok\WatsonBridge\Exceptions\WatsonBridgeException;
 
 class Bridge
 {

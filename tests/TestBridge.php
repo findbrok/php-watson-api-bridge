@@ -1,13 +1,13 @@
 <?php
 
 use Carbon\Carbon;
-use FindBrok\WatsonBridge\Bridge;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
+use FindBrok\WatsonBridge\Bridge;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\Exception\ClientException;
 
 class TestBridge extends PHPUnit_Framework_TestCase
 {
