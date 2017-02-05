@@ -4,9 +4,6 @@ namespace FindBrok\WatsonBridge;
 
 use Carbon\Carbon;
 
-/**
- * Class Token.
- */
 class Token
 {
     /**

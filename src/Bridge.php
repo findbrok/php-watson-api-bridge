@@ -78,15 +78,15 @@ class Bridge
      */
     public function __construct($username, $password, $endpoint)
     {
-        //Set Username, Password and Endpoint
+        // Set Username, Password and Endpoint.
         $this->username = $username;
         $this->password = $password;
         $this->endpoint = $endpoint;
 
-        //Set HttpClient
+        // Set HttpClient.
         $this->setClient($endpoint);
 
-        //Set Token
+        // Set Token.
         $this->token = new Token($this->username);
     }
 
@@ -99,12 +99,13 @@ class Bridge
      */
     public function appendHeaders($headers = [])
     {
-        //We have some headers to append
+        // We have some headers to append.
         if (! empty($headers)) {
-            //Append headers
+            // Append headers.
             $this->headers = collect($this->headers)->merge($headers)->all();
         }
-        //Return calling object
+
+        // Return calling object.
         return $this;
     }
 
@@ -117,7 +118,7 @@ class Bridge
      */
     public function cleanOptions($options = [])
     {
-        //If item is null or empty we will remove them
+        // If item is null or empty we will remove them.
         return collect($options)->reject(function ($item) {
             return empty($item) || is_null($item);
         })->all();
@@ -144,7 +145,7 @@ class Bridge
      */
     public function delete($uri, $data, $type = 'json')
     {
-        //Make a Delete and return response
+        // Make a Delete and return response.
         return $this->send('DELETE', $uri, $data, $type);
     }
 
@@ -157,13 +158,11 @@ class Bridge
      */
     public function failedRequest(Response $response)
     {
-        //Decode Response
+        // Decode Response.
         $decodedResponse = json_decode($response->getBody()->getContents(), true);
-        //Get error message
-        $errorMessage = (isset($decodedResponse['error_message']) && ! is_null($decodedResponse['error_message'])) ?
-            $decodedResponse['error_message'] :
-            $response->getReasonPhrase();
-        //ClientException
+        // Get error message.
+        $errorMessage = (isset($decodedResponse['error_message']) && ! is_null($decodedResponse['error_message'])) ? $decodedResponse['error_message'] : $response->getReasonPhrase();
+        // ClientException.
         throw new WatsonBridgeException($errorMessage, $response->getStatusCode());
     }
 
@@ -176,21 +175,21 @@ class Bridge
      */
     public function fetchToken($incrementThrottle = false)
     {
-        //Increment throttle if needed
+        // Increment throttle if needed.
         if ($incrementThrottle) {
             $this->incrementThrottle();
         }
-        //Reset Client
+        // Reset Client.
         $this->setClient($this->getAuthorizationEndpoint());
-        //Get the token response
+        // Get the token response.
         $response = $this->get('v1/token', [
             'url' => $this->endpoint,
         ]);
-        //Extract
+        // Extract.
         $token = json_decode($response->getBody()->getContents(), true);
-        //Reset client
+        // Reset client.
         $this->setClient($this->endpoint);
-        //Update token
+        // Update token.
         $this->token->updateToken($token['token']);
     }
 
@@ -204,7 +203,7 @@ class Bridge
      */
     public function get($uri = '', $query = [])
     {
-        //Make a Post and return response
+        // Make a Post and return response.
         return $this->send('GET', $uri, $query, 'query');
     }
 
@@ -215,7 +214,7 @@ class Bridge
      */
     public function getAuth()
     {
-        //Return access authorization
+        // Return access authorization.
         return [$this->username, $this->password];
     }
 
@@ -226,10 +225,11 @@ class Bridge
      */
     public function getAuthorizationEndpoint()
     {
-        //Parse the endpoint
+        // Parse the endpoint.
         $parsedEndpoint = collect(parse_url($this->endpoint));
-        //Return auth url
-        return $parsedEndpoint->get('scheme') . '://' . $parsedEndpoint->get('host') . '/authorization/api/';
+
+        // Return auth url.
+        return $parsedEndpoint->get('scheme').'://'.$parsedEndpoint->get('host').'/authorization/api/';
     }
 
     /**
@@ -239,7 +239,7 @@ class Bridge
      */
     public function getClient()
     {
-        //Return client
+        // Return client.
         return $this->client;
     }
 
@@ -250,7 +250,7 @@ class Bridge
      */
     public function getHeaders()
     {
-        //Return headers
+        // Return headers.
         return $this->headers;
     }
 
@@ -263,23 +263,20 @@ class Bridge
      */
     public function getRequestOptions($initial = [])
     {
-        //Define options
+        // Define options.
         $options = collect($initial);
-        //Define an auth option
+
+        // Define an auth option.
         if ($this->authMethod == 'credentials') {
-            $options = $options->merge([
-                'auth' => $this->getAuth(),
-            ]);
+            $options = $options->merge(['auth' => $this->getAuth()]);
         } elseif ($this->authMethod == 'token') {
-            $this->appendHeaders([
-                'X-Watson-Authorization-Token' => $this->getToken(),
-            ]);
+            $this->appendHeaders(['X-Watson-Authorization-Token' => $this->getToken()]);
         }
-        //Put Headers in options
-        $options = $options->merge([
-            'headers' => $this->getHeaders(),
-        ]);
-        //Clean and return
+
+        // Put Headers in options.
+        $options = $options->merge(['headers' => $this->getHeaders(),]);
+
+        // Clean and return.
         return $this->cleanOptions($options->all());
     }
 
@@ -290,13 +287,13 @@ class Bridge
      */
     public function getToken()
     {
-        //Token is not valid
+        // Token is not valid.
         if (! $this->token->isValid()) {
-            //Fetch from Watson
+            // Fetch from Watson.
             $this->fetchToken();
         }
 
-        //Return token
+        // Return token.
         return $this->token->getToken();
     }
 
@@ -331,7 +328,7 @@ class Bridge
      */
     public function patch($uri, $data, $type = 'json')
     {
-        //Make a Patch and return response
+        // Make a Patch and return response.
         return $this->send('PATCH', $uri, $data, $type);
     }
 
@@ -346,7 +343,7 @@ class Bridge
      */
     public function post($uri, $data, $type = 'json')
     {
-        //Make a Post and return response
+        // Make a Post and return response.
         return $this->send('POST', $uri, $data, $type);
     }
 
@@ -361,7 +358,7 @@ class Bridge
      */
     public function put($uri, $data, $type = 'json')
     {
-        //Make a Put and return response
+        // Make a Put and return response.
         return $this->send('PUT', $uri, $data, $type);
     }
 
@@ -377,19 +374,20 @@ class Bridge
     public function request($method = 'GET', $uri = '', $options = [])
     {
         try {
-            //Make the request
+            // Make the request.
             return $this->getClient()->request($method, $uri, $this->getRequestOptions($options));
         } catch (ClientException $e) {
-            //We are using token auth and probably token expired
+            // We are using token auth and probably token expired.
             if ($this->authMethod == 'token' && $e->getCode() == 401 && ! $this->isThrottledReached()) {
-                //Try refresh token
+                // Try refresh token.
                 $this->fetchToken(true);
-                //Try requesting again
+
+                // Try requesting again.
                 return $this->request($method, $uri, $options);
             }
-            //Clear throttle for this request
+            // Clear throttle for this request.
             $this->clearThrottle();
-            //Call Failed Request
+            // Call Failed Request.
             $this->failedRequest($e->getResponse());
         }
     }
@@ -406,14 +404,15 @@ class Bridge
      */
     private function send($method, $uri, $data, $type = 'json')
     {
-        //Make the Request to Watson
+        // Make the Request to Watson.
         $response = $this->request($method, $uri, [$type => $data]);
-        //Request Failed
+        // Request Failed.
         if ($response->getStatusCode() != 200) {
-            //Throw Watson Bridge Exception
+            // Throw Watson Bridge Exception.
             $this->failedRequest($response);
         }
-        //We return response
+
+        // We return response.
         return $response;
     }
 
@@ -426,10 +425,10 @@ class Bridge
      */
     public function setClient($endpoint = null)
     {
-        //Create client using API endpoint
+        // Create client using API endpoint.
         $this->client = new Client([
-            'base_uri' => ! is_null($endpoint) ? $endpoint : $this->endpoint,
-        ]);
+                                       'base_uri' => ! is_null($endpoint) ? $endpoint : $this->endpoint
+                                   ]);
     }
 
     /**
@@ -441,9 +440,10 @@ class Bridge
      */
     public function useAuthMethodAs($method = 'credentials')
     {
-        //Change auth method
+        // Change auth method.
         $this->authMethod = $method;
-        //Return object
+
+        // Return object.
         return $this;
     }
 }
