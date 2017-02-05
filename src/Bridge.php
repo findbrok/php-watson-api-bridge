@@ -274,7 +274,7 @@ class Bridge
         }
 
         // Put Headers in options.
-        $options = $options->merge(['headers' => $this->getHeaders(),]);
+        $options = $options->merge(['headers' => $this->getHeaders()]);
 
         // Clean and return.
         return $this->cleanOptions($options->all());
@@ -427,7 +427,7 @@ class Bridge
     {
         // Create client using API endpoint.
         $this->client = new Client([
-                                       'base_uri' => ! is_null($endpoint) ? $endpoint : $this->endpoint
+                                       'base_uri' => ! is_null($endpoint) ? $endpoint : $this->endpoint,
                                    ]);
     }
 
