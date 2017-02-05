@@ -47,7 +47,7 @@ class TestToken extends PHPUnit_Framework_TestCase
     public function createTestTokenFile($name = '', $data = [])
     {
         file_put_contents(
-            $this->getTokenStoragePath($name . '.json'),
+            $this->getTokenStoragePath($name.'.json'),
             collect($data)->toJson(),
             LOCK_EX
         );
@@ -62,7 +62,7 @@ class TestToken extends PHPUnit_Framework_TestCase
      */
     public function deleteTestTokenFile($name = '')
     {
-        unlink($this->getTokenStoragePath($name . '.json'));
+        unlink($this->getTokenStoragePath($name.'.json'));
     }
 
     /**
@@ -74,7 +74,7 @@ class TestToken extends PHPUnit_Framework_TestCase
      */
     public function getTokenStoragePath($file = '')
     {
-        return __DIR__ . '/../src/Storage/' . $file;
+        return __DIR__.'/../src/Storage/'.$file;
     }
 
     /**
