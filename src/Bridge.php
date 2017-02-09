@@ -95,7 +95,7 @@ class Bridge
      *
      * @param array $headers
      *
-     * @return self
+     * @return $this
      */
     public function appendHeaders($headers = [])
     {
@@ -233,6 +233,23 @@ class Bridge
     }
 
     /**
+     * Creates the http client.
+     *
+     * @param string $endpoint
+     *
+     * @return $this
+     */
+    public function setClient($endpoint = null)
+    {
+        // Create client using API endpoint.
+        $this->client = new Client([
+                                       'base_uri' => ! is_null($endpoint) ? $endpoint : $this->endpoint,
+                                   ]);
+
+        return $this;
+    }
+
+    /**
      * Return the Http client instance.
      *
      * @return \GuzzleHttp\Client
@@ -241,6 +258,29 @@ class Bridge
     {
         // Return client.
         return $this->client;
+    }
+
+    /**
+     * Set Watson service being used.
+     *
+     * @param string $serviceName
+     *
+     * @return $this
+     */
+    public function usingService($serviceName)
+    {
+        // Check if service exists first.
+        if (! config()->has('watson-bridge.services.'.$serviceName)) {
+            throw new WatsonBridgeException('Unknown service "'.$serviceName.'" try adding it to the list of services in watson-bridge config.');
+        }
+
+        // Get service endpoint.
+        $serviceUrl = config('watson-bridge.services.'.$serviceName);
+
+        // Reset Client.
+        $this->setClient(rtrim($this->endpoint, '/').'/'.ltrim($serviceUrl, '/'));
+
+        return $this;
     }
 
     /**
@@ -417,26 +457,11 @@ class Bridge
     }
 
     /**
-     * Creates the http client.
-     *
-     * @param string $endpoint
-     *
-     * @return void
-     */
-    public function setClient($endpoint = null)
-    {
-        // Create client using API endpoint.
-        $this->client = new Client([
-                                       'base_uri' => ! is_null($endpoint) ? $endpoint : $this->endpoint,
-                                   ]);
-    }
-
-    /**
      * Change the auth method.
      *
      * @param string $method
      *
-     * @return self
+     * @return $this
      */
     public function useAuthMethodAs($method = 'credentials')
     {
