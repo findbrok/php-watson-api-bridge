@@ -48,4 +48,5 @@ class TestServiceProvider extends TestCase
         $bridge->usingService('tradeoff_analytics');
         $this->assertEquals('/tradeoff-analytics/api', $bridge->getClient()->getConfig('base_uri')->getPath());
     }
+    
 }

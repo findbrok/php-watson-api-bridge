@@ -2,8 +2,8 @@
 
 namespace FindBrok\WatsonBridge;
 
-use FindBrok\WatsonBridge\Exceptions\WatsonBridgeException;
 use Illuminate\Support\ServiceProvider;
+use FindBrok\WatsonBridge\Exceptions\WatsonBridgeException;
 
 class WatsonBridgeServiceProvider extends ServiceProvider
 {
@@ -16,7 +16,7 @@ class WatsonBridgeServiceProvider extends ServiceProvider
     {
         // Publish Config.
         $this->publishes([
-                             __DIR__.'/config/watson-bridge.php' => config_path('watson-bridge.php')
+                             __DIR__.'/config/watson-bridge.php' => config_path('watson-bridge.php'),
                          ], 'watson-api-bridge');
     }
 
@@ -85,4 +85,5 @@ class WatsonBridgeServiceProvider extends ServiceProvider
 
         return config('watson-bridge.credentials.'.$name);
     }
+
 }

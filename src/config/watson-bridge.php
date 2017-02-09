@@ -29,7 +29,7 @@ return [
         'default' => [
             'username' => env('WATSON_API_USERNAME', 'SomeUsername'),
             'password' => env('WATSON_API_PASSWORD', 'SomePassword'),
-            'gateway'  => env('WATSON_API_GATEWAY', 'https://gateway.watsonplatform.net')
+            'gateway'  => env('WATSON_API_GATEWAY', 'https://gateway.watsonplatform.net'),
         ],
     ],
 
@@ -71,4 +71,5 @@ return [
     */
 
     'x_watson_learning_opt_out' => false,
+
 ];
