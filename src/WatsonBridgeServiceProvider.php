@@ -85,5 +85,4 @@ class WatsonBridgeServiceProvider extends ServiceProvider
 
         return config('watson-bridge.credentials.'.$name);
     }
-    
 }
