@@ -48,7 +48,7 @@ class WatsonBridgeServiceProvider extends ServiceProvider
     {
         // A credential name is necessary.
         if (! isset($args['use'])) {
-            throw new WatsonBridgeException('Could not construct Bridge, please specify a credential name.', 500);
+            $args['use'] = 'default';
         }
 
         // Get credentials array.
