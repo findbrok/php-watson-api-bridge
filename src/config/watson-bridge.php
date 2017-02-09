@@ -71,5 +71,5 @@ return [
     */
 
     'x_watson_learning_opt_out' => false,
-
+    
 ];
