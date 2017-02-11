@@ -81,7 +81,7 @@ return [
 
     'auth_methods' => [
         'credentials',
-        'token'
+        'token',
     ],
 
     /*

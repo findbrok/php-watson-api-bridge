@@ -26,7 +26,16 @@ class BridgeStack extends Collection
         parent::__construct($items);
     }
 
-    
+    /**
+     * Mounts a Bridge on the stack.
+     *
+     * @param string $name
+     * @param string $credential
+     * @param string $service
+     * @param string $authMethod
+     *
+     * @return $this
+     */
     public function mountBridge($name, $credential = null, $service = null, $authMethod = null)
     {
     }
