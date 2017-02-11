@@ -66,7 +66,8 @@ class Token
      */
     public function isExpired()
     {
-        return $this->hasPayLoad() && ($this->payLoad['created'] + $this->payLoad['expires_in']) < Carbon::now()->format('U');
+        return $this->hasPayLoad() && ($this->payLoad['created'] + $this->payLoad['expires_in']) < Carbon::now()
+                                                                                                         ->format('U');
     }
 
     /**
@@ -96,11 +97,12 @@ class Token
      */
     public function save()
     {
-        //No payload to save
+        // No payload to save.
         if (! $this->hasPayLoad()) {
             return false;
         }
-        //Save the token
+
+        // Save the token.
         return (bool) file_put_contents($this->getFilePath(), collect($this->payLoad)->toJson(), LOCK_EX);
     }
 
@@ -121,12 +123,13 @@ class Token
      */
     public function loadPayLoadFromFile()
     {
-        //Not found
+        // Not found.
         if (! $this->exists()) {
-            //We return empty array
+            // We return empty array.
             return [];
         }
-        //Load content from file
+
+        // Load content from file.
         return json_decode(file_get_contents($this->getFilePath()), true);
     }
 
@@ -159,13 +162,14 @@ class Token
      */
     public function updateToken($token)
     {
-        //Update Payload
+        // Update Payload.
         $this->payLoad = [
             'token'      => $token,
             'expires_in' => 3600,
             'created'    => Carbon::now()->format('U'),
         ];
-        //Save token
+
+        // Save token.
         return $this->save();
     }
 }

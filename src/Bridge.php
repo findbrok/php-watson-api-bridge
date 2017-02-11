@@ -76,18 +76,77 @@ class Bridge
      * @param string $password
      * @param string $endpoint
      */
-    public function __construct($username, $password, $endpoint)
+    public function __construct($username = null, $password = null, $endpoint = null)
     {
         // Set Username, Password and Endpoint.
-        $this->username = $username;
-        $this->password = $password;
-        $this->endpoint = $endpoint;
+        $this->setUsername($username);
+        $this->setPassword($password);
+        $this->setEndPoint($endpoint);
 
         // Set HttpClient.
         $this->setClient($endpoint);
 
         // Set Token.
-        $this->token = new Token($this->username);
+        $this->setToken($username);
+    }
+
+    /**
+     * Sets the Username.
+     *
+     * @param string $username
+     *
+     * @return $this
+     */
+    public function setUsername($username = null)
+    {
+        $this->username = $username;
+
+        return $this;
+    }
+
+    /**
+     * Sets the Password.
+     *
+     * @param string $password
+     *
+     * @return $this
+     */
+    public function setPassword($password = null)
+    {
+        $this->password = $password;
+
+        return $this;
+    }
+
+    /**
+     * Sets the Endpoint.
+     *
+     * @param string $endpoint
+     *
+     * @return $this
+     */
+    public function setEndPoint($endpoint = null)
+    {
+        $this->endpoint = $endpoint;
+
+        return $this;
+    }
+
+    /**
+     * Sets the Token.
+     *
+     * @param string $username
+     *
+     * @return $this
+     */
+    public function setToken($username = null)
+    {
+        // Only set Token if Username is supplied.
+        if (! is_null($username)) {
+            $this->token = new Token($username);
+        }
+
+        return $this;
     }
 
     /**

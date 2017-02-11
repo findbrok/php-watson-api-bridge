@@ -2,6 +2,8 @@
 
 use FindBrok\WatsonBridge\Bridge;
 use Orchestra\Testbench\TestCase;
+use FindBrok\WatsonBridge\Support\Carpenter;
+use FindBrok\WatsonBridge\Support\BridgeStack;
 use FindBrok\WatsonBridge\WatsonBridgeServiceProvider;
 
 class TestServiceProvider extends TestCase
@@ -29,23 +31,40 @@ class TestServiceProvider extends TestCase
      */
     public function testRegistrationOfServiceProvider()
     {
-        /** @var Bridge $bridge */
         $bridge = $this->app->make(Bridge::class);
         $this->assertInstanceOf(Bridge::class, $bridge);
+
+        $carpenter = $this->app->make(Carpenter::class);
+        $this->assertInstanceOf(Carpenter::class, $carpenter);
+
+        $bridgeStack = $this->app->make(BridgeStack::class);
+        $this->assertInstanceOf(BridgeStack::class, $bridgeStack);
     }
 
     /**
-     * Test that we can change service at will.
+     * Test that we can create bridges correctly.
      */
-    public function testUsingServiceMethodChangesTheClientCorrectly()
+    public function testCarpenterCreateBridgesCorrectly()
+    {
+        /** @var Carpenter $carpenter */
+        $carpenter = $this->app->make(Carpenter::class);
+        $bridge = $carpenter->constructBridge('default', 'personality_insights');
+
+        $this->assertEquals('/personality-insights/api', $bridge->getClient()->getConfig('base_uri')->getPath());
+
+        $bridge2 = $carpenter->constructBridge('default', 'tradeoff_analytics');
+        $this->assertEquals('/tradeoff-analytics/api', $bridge2->getClient()->getConfig('base_uri')->getPath());
+    }
+
+    /**
+     * Tests that the Default Bridge is being constructed.
+     */
+    public function testWeCanConstructADefaultBridge()
     {
         /** @var Bridge $bridge */
         $bridge = $this->app->make(Bridge::class);
+        $this->assertInstanceOf(Bridge::class, $bridge);
 
-        $bridge->usingService('personality_insights');
-        $this->assertEquals('/personality-insights/api', $bridge->getClient()->getConfig('base_uri')->getPath());
-
-        $bridge->usingService('tradeoff_analytics');
-        $this->assertEquals('/tradeoff-analytics/api', $bridge->getClient()->getConfig('base_uri')->getPath());
+        $this->assertEquals(['SomeUsername', 'SomePassword'], $bridge->getAuth());
     }
 }

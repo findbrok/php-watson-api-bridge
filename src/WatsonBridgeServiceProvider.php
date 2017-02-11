@@ -3,7 +3,10 @@
 namespace FindBrok\WatsonBridge;
 
 use Illuminate\Support\ServiceProvider;
-use FindBrok\WatsonBridge\Exceptions\WatsonBridgeException;
+use Illuminate\Contracts\Config\Repository;
+use FindBrok\WatsonBridge\Support\Carpenter;
+use FindBrok\WatsonBridge\Support\BridgeStack;
+use Illuminate\Contracts\Foundation\Application;
 
 class WatsonBridgeServiceProvider extends ServiceProvider
 {
@@ -30,59 +33,33 @@ class WatsonBridgeServiceProvider extends ServiceProvider
         // Merge configs.
         $this->mergeConfigFrom(__DIR__.'/config/watson-bridge.php', 'watson-bridge');
 
-        // Bind Bridge in the IOC.
-        $this->app->bind(Bridge::class, function ($app, array $args = ['use' => 'default']) {
-            return $this->constructBridge($args);
+        // The Carpenter must be an Instance because we need only one.
+        $this->app->singleton(Carpenter::class, function () {
+            return new Carpenter();
         });
+
+        // The Bridge Stack also must be the same across the entire app.
+        $this->app->singleton(BridgeStack::class, function (Application $app) {
+            return new BridgeStack($app->make(Carpenter::class), []);
+        });
+
+        // Registers a Default Bridge.
+        $this->registerDefaultBridge();
     }
 
     /**
-     * Construct Watson Bridge.
-     *
-     * @param array $args
-     *
-     * @throws WatsonBridgeException
-     * @return Bridge
+     * Registers the Default Bridge.
      */
-    protected function constructBridge(array $args)
+    protected function registerDefaultBridge()
     {
-        // A credential name is necessary.
-        if (! isset($args['use'])) {
-            $args['use'] = 'default';
-        }
+        $this->app->bind(Bridge::class, function (Application $app) {
+            /** @var Carpenter $carpenter */
+            $carpenter = $app->make(Carpenter::class);
+            /** @var Repository $config */
+            $config = $app->make(Repository::class);
 
-        // Get credentials array.
-        $credentials = $this->getCredentials($args['use']);
-
-        // Make sure credentials information is available.
-        if (! isset($credentials['username']) || ! isset($credentials['password']) || ! isset($credentials['gateway'])) {
-            throw new WatsonBridgeException('Could not construct Bridge, missing some information in credentials.',
-                                            500);
-        }
-
-        // Make bridge.
-        $bridge = new Bridge($credentials['username'], $credentials['password'], $credentials['gateway']);
-        $bridge->appendHeaders(['X-Watson-Learning-Opt-Out' => config('watson-bridge.x_watson_learning_opt_out')]);
-
-        return $bridge;
-    }
-
-    /**
-     * Get credentials to use.
-     *
-     * @param string $name
-     *
-     * @throws WatsonBridgeException
-     * @return array
-     */
-    protected function getCredentials($name = 'default')
-    {
-        // We must make sure that credentials exists.
-        if (! config()->has('watson-bridge.credentials.'.$name)) {
-            throw new WatsonBridgeException('Credentials "'.$name.'" does not exist, try specifying it in the watson-bridge config.',
-                                            500);
-        }
-
-        return config('watson-bridge.credentials.'.$name);
+            return $carpenter->constructBridge($config->get('watson-bridge.default_credentials'), null,
+                                               $config->get('watson-bridge.default_auth_method'));
+        });
     }
 }
