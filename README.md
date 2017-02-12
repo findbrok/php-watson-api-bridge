@@ -110,22 +110,22 @@ $response = $stack->conjure('myPIBridge')->post('/v3/profile', $dataToPost);
 ```
 The ```BridgeStack``` is essentially a Laravel Collection, thus you have access to all Collection methods.
  
- ### Facades
+### Facades
  
- If you are using Laravel version less than 5.4 you have access to 3 Facades for the 3 services Bridge, Carpenter and BridgeStack.
- Since Laravel 5.4 added automatic Facades you won't be needing those classes.
+If you are using Laravel version less than 5.4 you have access to 3 Facades for the 3 services Bridge, Carpenter and BridgeStack.
+Since Laravel 5.4 added automatic Facades you won't be needing those classes.
  
- - FindBrok\WatsonBridge\Facades\Bridge
- - FindBrok\WatsonBridge\Facades\BridgeStack
- - FindBrok\WatsonBridge\Facades\Carpenter
+- FindBrok\WatsonBridge\Facades\Bridge
+- FindBrok\WatsonBridge\Facades\BridgeStack
+- FindBrok\WatsonBridge\Facades\Carpenter
  
- Remember that if you are resolving the Bridge directly from the IoC and not constructing it with the Carpenter class a default Bridge will
- be resolved for you using the default credentials and auth methods from your watson-bridge config. 
+Remember that if you are resolving the Bridge directly from the IoC and not constructing it with the Carpenter class a default Bridge will
+be resolved for you using the default credentials and auth methods from your watson-bridge config. 
  
- ## Credits
+## Credits
  
- [![Percy Mamedy](https://img.shields.io/badge/Author-Percy%20Mamedy-orange.svg)](https://twitter.com/PercyMamedy)
- 
- Twitter: [@PercyMamedy](https://twitter.com/PercyMamedy)
- <br/>
- GitHub: [percymamedy](https://github.com/percymamedy)
+[![Percy Mamedy](https://img.shields.io/badge/Author-Percy%20Mamedy-orange.svg)](https://twitter.com/PercyMamedy) 
+
+Twitter: [@PercyMamedy](https://twitter.com/PercyMamedy)
+<br/>
+GitHub: [percymamedy](https://github.com/percymamedy)
