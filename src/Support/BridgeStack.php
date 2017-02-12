@@ -2,7 +2,9 @@
 
 namespace FindBrok\WatsonBridge\Support;
 
+use FindBrok\WatsonBridge\Bridge;
 use Illuminate\Support\Collection;
+use FindBrok\WatsonBridge\Exceptions\WatsonBridgeException;
 
 class BridgeStack extends Collection
 {
@@ -36,7 +38,33 @@ class BridgeStack extends Collection
      *
      * @return $this
      */
-    public function mountBridge($name, $credential = null, $service = null, $authMethod = null)
+    public function mountBridge($name, $credential, $service = null, $authMethod = 'credentials')
     {
+        // Creates the Bridge.
+        $bridge = $this->carpenter->constructBridge($credential, $service, $authMethod);
+
+        // Save it under a name.
+        $this->put($name, $bridge);
+
+        return $this;
+    }
+
+    /**
+     * Conjures a specific Bridge to use.
+     *
+     * @param string $name
+     *
+     * @throws WatsonBridgeException
+     * @return Bridge
+     */
+    public function conjure($name)
+    {
+        // We must check if the Bridge does
+        // exists.
+        if (! $this->has($name)) {
+            throw new WatsonBridgeException('The Bridge with name "'.$name.'" does not exist.');
+        }
+
+        return $this->get($name);
     }
 }
