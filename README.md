@@ -55,12 +55,27 @@ all your responses will be instances of ```GuzzleHttp\Psr7\Response```
 ### Integration with Laravel 5
 As of version 1.1.x, PHP Watson API bridge adds a new Service Provider which integrates easily with Laravel 5.
 
+> If you are using Laravel >= 5.5, you can skip service registration 
+> and aliases registration thanks to Laravel auto package discovery 
+> feature.
+
 First add the ServiceProvider to your ```app.php``` file:
 
 ```php
 'providers' => [
    ....
    FindBrok\WatsonBridge\WatsonBridgeServiceProvider::class,
+]
+```
+
+You can also add the following aliases to you ```app.php``` file:
+
+```php
+'aliases' => [
+    ...
+    'Bridge'      => FindBrok\WatsonBridge\Facades\Bridge::class,
+    'BridgeStack' => FindBrok\WatsonBridge\Facades\BridgeStack::class,
+    'Carpenter'   => FindBrok\WatsonBridge\Facades\Carpenter::class,
 ]
 ```
 
