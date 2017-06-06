@@ -26,7 +26,17 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.1.x-dev"
+            "dev-master": "1.2.x-dev"
+        },
+        "laravel": {
+            "providers": [
+                "FindBrok\\WatsonBridge\\WatsonBridgeServiceProvider"
+            ],
+            "aliases": {
+                "Bridge": "FindBrok\\WatsonBridge\\Facades\\Bridge",
+                "BridgeStack": "FindBrok\\WatsonBridge\\Facades\\BridgeStack",
+                "Carpenter": "FindBrok\\WatsonBridge\\Facades\\Carpenter"
+            }
         }
     },
     "minimum-stability": "dev",

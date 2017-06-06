@@ -19,8 +19,8 @@ class WatsonBridgeServiceProvider extends ServiceProvider
     {
         // Publish Config.
         $this->publishes([
-                             __DIR__.'/config/watson-bridge.php' => config_path('watson-bridge.php'),
-                         ], 'watson-api-bridge');
+            __DIR__.'/../config/watson-bridge.php' => config_path('watson-bridge.php'),
+        ], 'watson-api-bridge');
     }
 
     /**
@@ -31,7 +31,7 @@ class WatsonBridgeServiceProvider extends ServiceProvider
     public function register()
     {
         // Merge configs.
-        $this->mergeConfigFrom(__DIR__.'/config/watson-bridge.php', 'watson-bridge');
+        $this->mergeConfigFrom(__DIR__.'/../config/watson-bridge.php', 'watson-bridge');
 
         // The Carpenter must be an Instance because we need only one.
         $this->app->singleton(Carpenter::class, function () {
@@ -58,8 +58,11 @@ class WatsonBridgeServiceProvider extends ServiceProvider
             /** @var Repository $config */
             $config = $app->make(Repository::class);
 
-            return $carpenter->constructBridge($config->get('watson-bridge.default_credentials'), null,
-                                               $config->get('watson-bridge.default_auth_method'));
+            return $carpenter->constructBridge(
+                $config->get('watson-bridge.default_credentials'),
+                null,
+                $config->get('watson-bridge.default_auth_method')
+            );
         });
     }
 }
