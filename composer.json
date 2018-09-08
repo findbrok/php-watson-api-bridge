@@ -1,5 +1,5 @@
 {
-    "name": "davemg3/php-watson-api-bridge",
+    "name": "findbrok/php-watson-api-bridge",
     "description": "A simple PHP Wrapper around IBM Watson API",
     "keywords": ["php", "ibm", "watson", "api", "bridge"],
     "license": "MIT",
